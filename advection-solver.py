@@ -45,13 +45,67 @@ def forward(x, u_initial, psi, f, T, R):
     a = (1j*psi - xi) * xi
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
-    for n in range (0, N - 1):
+    for n in range (0, N):
         if np.abs(xi[n]) > tol:
             u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - 
             (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
         else:
             u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
     u_final = (1.0/(2*np.pi))*N*nudft(xi, u_hat_final, x, -1)
+    print("f : ", f)
+    print("xi : ", xi)
+    print("x : ", x)
+    print("u0_hat : ", u_hat_initial)
+    print("a :", a)
+    print("f_hat :", f_hat)
+    print("uT_hat : ", u_hat_final)
+    print("u_final : ", u_final)
+    return u_final
+
+def forward_nufft(x, u_initial, psi, f, T, R):
+    """Solves advection-diffusion equation forward in time using the FFT.
+
+    The equation is
+    $$
+    u_t - u_{xx} - \psi u_x - f(x) = 0 \:,
+    $$
+    with initial condition $u(x,0) = u_initial$. We assume that 
+    the support of f(x) is a subset of [-R/2, R/2].
+
+    Args:
+        x: grid in physical space
+        u_initial: initial field value
+        psi: advection coefficient
+        f: time independent source
+        T: final time
+        R: The support of the source is a subset of $[-R,R]$
+    
+    Returns:
+        u_final: final field value
+
+    """
+    N = len(x)
+    # nufft frecuencies
+    xi = (np.arange(-N // 2, N // 2) + N % 2)
+    u_hat_initial = R*nufft_fortran(x, u_initial, N)
+    print("f : ", f)
+    f_hat = R*nufft_fortran(x, f, N)
+    a = (1j*psi - xi) * xi
+    u_hat_final = np.zeros(N)
+    u_hat_final = np.array(u_hat_final, dtype=complex)
+    print("xi : ", xi)
+    print("x : ", x)
+    print("u0_hat : ", u_hat_initial)
+    print("a :", a)
+    print("f_hat :", f_hat)
+    for n in range (0, N):
+        if np.abs(xi[n]) > tol:
+            u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
+        else:
+            u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
+    print("uT_hat : ", u_hat_final)
+    u_final = (1.0/(2*np.pi))*N*nufft_fortran(xi*(R/N), u_hat_final, N, iflag=-1)
+    print("u_final : ", u_final)
     return u_final
 
 def forwardDemo():
@@ -65,7 +119,7 @@ def forwardDemo():
     x = np.linspace(- R/2.0 + dx, R/2.0, N ) # position along the rod
     u0 = np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
     f = 1000*np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
-    uT = forward(x, u0, psi, f, T, R)
+    uT = forward_nufft(x, u0, psi, f, T, R)
     plt.plot(x, u0, 'r', label="$t=0$")
     plt.plot(x, uT, 'b', label="$t=T$")
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
@@ -100,16 +154,16 @@ def u_advection(x, t, psi):
  
 def forwardTest():
     """ Quick test of the forward function, with ZERO SOURCE"""
-    N = 1001  # number of observations
+    N = 10001 # number of observations
     T = 0.0001
     t = 0.0001
-    psi = 1000
-    R = 1
+    psi = 1000.0
+    R = 2.0
     dx = R/N
-    x = np.linspace(- R/2.0 + dx, R/2.0, N ) # position along the rod
+    x = np.linspace(- R/2.0 , R/2.0 - dx , N ) # position along the rod
     u0 = u_advection(x, t, psi)
     f = np.zeros(N)
-    uT = forward(x, u0, psi, f, T, R)
+    uT = forward_nufft(x, u0, psi, f, T, R)
     uT_analytical = u_advection(x, t + T, psi)
     plt.plot(x, u0, 'g', label="$t=0$")
     plt.plot(x, uT, 'b', label="numerical soln, $t=T$")
