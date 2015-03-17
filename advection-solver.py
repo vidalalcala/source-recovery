@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from nufft import nufft1 as nufft_fortran
-#pp = PdfPages('multipage.pdf')
+pp = PdfPages('./images/advection-solver.pdf')
 
 def nufftfreqs(M, df=1):
     """Compute the frequency range used in nufft for M frequency bins"""
@@ -45,7 +45,6 @@ def forward(x, u_initial, psi, f, T, R):
     u_hat_initial = R*nudft(x, u_initial, xi, 1)
     f_hat = R*nudft(x, f, xi, 1)
     a = (1j*psi - xi) * xi
-    print("a", a)
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
     for n in range (0, N - 1):
@@ -57,8 +56,8 @@ def forward(x, u_initial, psi, f, T, R):
     u_final = (1.0/(2*np.pi))*N*nudft(xi, u_hat_final, x, -1)
     return u_final
 
-def forwardTest():
-    """ Quick test of the forward function """
+def forwardDemo():
+    """ Quick demo of the forward function """
     N = 1001  # number of observations
     T = 0.0001
     t = 0.0001
@@ -66,19 +65,20 @@ def forwardTest():
     R = 1
     dx = R/N
     x = np.linspace(- R/2.0 + dx, R/2.0, N ) # position along the rod
-    print("x : ", x)
     u0 = np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
-    plt.plot(x,u0)
-    plt.show()
     f = 1000*np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
     uT = forward(x, u0, psi, f, T, R)
-    print("uT", uT)
-    plt.plot(x,uT)
-    #pp.savefig()
+    plt.plot(x, u0, 'r', label="$t=0$")
+    plt.plot(x, uT, 'b', label="$t=T$")
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
+    	    ncol=2, mode="expand", borderaxespad=0.)
+    plt.xlabel('$x$')
+    plt.ylabel('$u$')
+    pp.savefig()
     plt.show()
-    #pp.close()
+    pp.close()
     
 # Main program
 tol = 0.00000000000000001 #CHECK, acumulation of frequencies could be a problem
-forwardTest()
+forwardDemo()
 
