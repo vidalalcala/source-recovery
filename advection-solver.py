@@ -1,12 +1,10 @@
 # advection-solver.py
 
-
 from __future__ import print_function, division
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from nufft import nufft1 as nufft_fortran
-pp = PdfPages('./images/advection-solver.pdf')
 
 def nufftfreqs(M, df=1):
     """Compute the frequency range used in nufft for M frequency bins"""
@@ -74,11 +72,58 @@ def forwardDemo():
     	    ncol=2, mode="expand", borderaxespad=0.)
     plt.xlabel('$x$')
     plt.ylabel('$u$')
+    pp = PdfPages('./images/advection-solver-demo.pdf')
+    pp.savefig()
+    plt.show()
+    pp.close()
+ 
+def u_advection(x, t, psi):
+    """Analytical solution of advection-diffusion equation forward in time.
+
+    The equation is
+    $$
+    u_t - u_{xx} - \psi u_x = 0 \:,
+    $$
+    with initial condition $u(x,0) = \delta_{x=0}$.
+
+    Args:
+        x: grid in physical space
+        t: time
+        psi: advection coefficient, units [x]/[t]
+    
+    Returns:
+        u: field value at time t evaluated over the vector x
+
+    """	
+    u = np.exp(-(x - psi*t)*(x - psi*t)/(4.0*t))/np.sqrt(4.0*np.pi*t)
+    return u
+ 
+def forwardTest():
+    """ Quick test of the forward function, with ZERO SOURCE"""
+    N = 1001  # number of observations
+    T = 0.0001
+    t = 0.0001
+    psi = 1000
+    R = 1
+    dx = R/N
+    x = np.linspace(- R/2.0 + dx, R/2.0, N ) # position along the rod
+    u0 = u_advection(x, t, psi)
+    f = np.zeros(N)
+    uT = forward(x, u0, psi, f, T, R)
+    uT_analytical = u_advection(x, t + T, psi)
+    plt.plot(x, u0, 'g', label="$t=0$")
+    plt.plot(x, uT, 'b', label="numerical soln, $t=T$")
+    plt.plot(x, uT_analytical, 'r--', label="analytical soln, $t=T$")
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
+    	    ncol=2, mode="expand", borderaxespad=0.)
+    plt.xlabel('$x$')
+    plt.ylabel('$u$')
+    pp = PdfPages('./images/advection-solver-test.pdf')
     pp.savefig()
     plt.show()
     pp.close()
     
 # Main program
 tol = 0.00000000000000001 #CHECK, acumulation of frequencies could be a problem
-forwardDemo()
+forwardTest()
 

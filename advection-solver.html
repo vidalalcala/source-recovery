@@ -45,9 +45,25 @@ Args:<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;u_final:&nbsp;final&nbsp;field&nbsp;value</tt></dd></dl>
- <dl><dt><a name="-forwardTest"><strong>forwardTest</strong></a>()</dt><dd><tt>Quick&nbsp;test&nbsp;of&nbsp;the&nbsp;forward&nbsp;function</tt></dd></dl>
+ <dl><dt><a name="-forwardDemo"><strong>forwardDemo</strong></a>()</dt><dd><tt>Quick&nbsp;demo&nbsp;of&nbsp;the&nbsp;forward&nbsp;function</tt></dd></dl>
+ <dl><dt><a name="-forwardTest"><strong>forwardTest</strong></a>()</dt><dd><tt>Quick&nbsp;test&nbsp;of&nbsp;the&nbsp;forward&nbsp;function,&nbsp;with&nbsp;ZERO&nbsp;SOURCE</tt></dd></dl>
  <dl><dt><a name="-nudft"><strong>nudft</strong></a>(x, y, xi, iflag<font color="#909090">=1</font>)</dt><dd><tt>Non-Uniform&nbsp;Direct&nbsp;Fourier&nbsp;Transform</tt></dd></dl>
  <dl><dt><a name="-nufftfreqs"><strong>nufftfreqs</strong></a>(M, df<font color="#909090">=1</font>)</dt><dd><tt>Compute&nbsp;the&nbsp;frequency&nbsp;range&nbsp;used&nbsp;in&nbsp;nufft&nbsp;for&nbsp;M&nbsp;frequency&nbsp;bins</tt></dd></dl>
+ <dl><dt><a name="-u_advection"><strong>u_advection</strong></a>(x, t, psi)</dt><dd><tt>Analytical&nbsp;solution&nbsp;of&nbsp;advection-diffusion&nbsp;equation&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+The&nbsp;equation&nbsp;is<br>
+$$<br>
+u_t&nbsp;-&nbsp;u_{xx}&nbsp;-&nbsp;\psi&nbsp;u_x&nbsp;=&nbsp;0&nbsp;\:,<br>
+$$<br>
+with&nbsp;initial&nbsp;condition&nbsp;$u(x,0)&nbsp;=&nbsp;\delta_{x=0}$.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x:&nbsp;grid&nbsp;in&nbsp;physical&nbsp;space<br>
+&nbsp;&nbsp;&nbsp;&nbsp;t:&nbsp;time<br>
+&nbsp;&nbsp;&nbsp;&nbsp;psi:&nbsp;advection&nbsp;coefficient,&nbsp;units&nbsp;[x]/[t]<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;u:&nbsp;field&nbsp;value&nbsp;at&nbsp;time&nbsp;t&nbsp;evaluated&nbsp;over&nbsp;the&nbsp;vector&nbsp;x</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
