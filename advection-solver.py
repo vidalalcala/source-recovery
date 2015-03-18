@@ -40,17 +40,24 @@ def forward(x, u_initial, psi, f, T, R):
     N = len(x)
     # nufft frecuencies
     xi = np.arange(-(N // 2), N - (N // 2))
+    zero_freq_index = N // 2
+    
+    # Fourier transform
     u_hat_initial = R*nudft(x, u_initial, xi, 1)
     f_hat = R*nudft(x, f, xi, 1)
+    
+    # Solve ODE's analitically in Fourier space
     a = (1j*psi - xi) * xi
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
-    for n in range (0, N):
-        if np.abs(xi[n]) > tol:
-            u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - 
-            (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
-        else:
-            u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
+    
+    for n in range (0, zero_freq_index):
+        u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
+    for n in range (zero_freq_index + 1, N):
+        u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))    
+    u_hat_final[zero_freq_index] = u_hat_initial[zero_freq_index] + (T + 0j) * f_hat[zero_freq_index]
+    
+    # inverse Fourier transform
     u_final = (1.0/(2*np.pi))*N*nudft(xi, u_hat_final, x, -1)
     return u_final
 
@@ -79,22 +86,30 @@ def forward_nufft(x, u_initial, psi, f, T, R):
     N = len(x)
     # nufft frecuencies
     xi = (np.arange(-N // 2, N // 2) + N % 2)
+    zero_freq_index = N // 2
+    
+    # Fourier transform
     u_hat_initial = R*nufft_fortran(x, u_initial, N)
     f_hat = R*nufft_fortran(x, f, N)
+    
+    # Solve ODE's analitically in Fourier space
     a = (1j*psi - xi) * xi
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
-    for n in range (0, N):
-        if np.abs(xi[n]) > tol:
-            u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
-        else:
-            u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
+    
+    for n in range (0, zero_freq_index):
+        u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
+    for n in range (zero_freq_index + 1, N):
+        u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))    
+    u_hat_final[zero_freq_index] = u_hat_initial[zero_freq_index] + (T + 0j) * f_hat[zero_freq_index]
+    
+    # inverse Fourier transform
     u_final = (1.0/(2*np.pi))*N*nufft_fortran(xi*(R/N), u_hat_final, N, iflag=-1)
     return u_final
 
 def forwardDemo():
     """ Quick demo of the forward function """
-    N = 1001  # number of observations
+    N = 1000  # number of observations
     T = 0.0001
     t = 0.0001
     psi = 2000
@@ -103,7 +118,7 @@ def forwardDemo():
     x = np.linspace(- R/2.0 + dx, R/2.0, N ) # position along the rod
     u0 = np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
     f = 1000*np.exp(-(x)*(x)/(4.0*t))/np.sqrt(4.0*np.pi*t)
-    uT = forward_nufft(x, u0, psi, f, T, R)
+    uT = forward(x, u0, psi, f, T, R)
     plt.plot(x, u0, 'r', label="$t=0$")
     plt.plot(x, uT, 'b', label="$t=T$")
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
@@ -138,7 +153,7 @@ def u_advection(x, t, psi):
  
 def forwardTest():
     """ Quick test of the forward function, with ZERO SOURCE"""
-    N = 10001 # number of observations
+    N = 1000 # number of observations
     T = 0.0001
     t = 0.0001
     psi = 1000.0
@@ -147,7 +162,7 @@ def forwardTest():
     x = np.linspace(- R/2.0 , R/2.0 - dx , N ) # position along the rod
     u0 = u_advection(x, t, psi)
     f = np.zeros(N)
-    uT = forward_nufft(x, u0, psi, f, T, R)
+    uT = forward(x, u0, psi, f, T, R)
     uT_analytical = u_advection(x, t + T, psi)
     plt.plot(x, u0, 'g', label="$t=0$")
     plt.plot(x, uT, 'b', label="numerical soln, $t=T$")
@@ -160,8 +175,4 @@ def forwardTest():
     pp.savefig()
     plt.show()
     pp.close()
-    
-# Main program
-tol = 0.00000000000000001 #CHECK, acumulation of frequencies could be a problem
-forwardTest()
 
