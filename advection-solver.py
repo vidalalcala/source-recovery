@@ -52,14 +52,6 @@ def forward(x, u_initial, psi, f, T, R):
         else:
             u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
     u_final = (1.0/(2*np.pi))*N*nudft(xi, u_hat_final, x, -1)
-    print("f : ", f)
-    print("xi : ", xi)
-    print("x : ", x)
-    print("u0_hat : ", u_hat_initial)
-    print("a :", a)
-    print("f_hat :", f_hat)
-    print("uT_hat : ", u_hat_final)
-    print("u_final : ", u_final)
     return u_final
 
 def forward_nufft(x, u_initial, psi, f, T, R):
@@ -88,24 +80,16 @@ def forward_nufft(x, u_initial, psi, f, T, R):
     # nufft frecuencies
     xi = (np.arange(-N // 2, N // 2) + N % 2)
     u_hat_initial = R*nufft_fortran(x, u_initial, N)
-    print("f : ", f)
     f_hat = R*nufft_fortran(x, f, N)
     a = (1j*psi - xi) * xi
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
-    print("xi : ", xi)
-    print("x : ", x)
-    print("u0_hat : ", u_hat_initial)
-    print("a :", a)
-    print("f_hat :", f_hat)
     for n in range (0, N):
         if np.abs(xi[n]) > tol:
             u_hat_final[n] = (u_hat_initial[n] * np.exp(a[n] * T) - (f_hat[n]/a[n]) * (1.0 - np.exp(a[n] * T)))
         else:
             u_hat_final[n] = u_hat_initial[n] + (T + 0j) * f_hat[n]
-    print("uT_hat : ", u_hat_final)
     u_final = (1.0/(2*np.pi))*N*nufft_fortran(xi*(R/N), u_hat_final, N, iflag=-1)
-    print("u_final : ", u_final)
     return u_final
 
 def forwardDemo():
