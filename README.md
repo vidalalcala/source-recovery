@@ -5,5 +5,5 @@ in the advection diffusion equation. So far we have a solver for the forward pro
 
 Running
 ----
-	$python advection-solver.py
+	$python advection_solver.py
 
