@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from nufft import nufft1 as nufft_fortran
+from nufft import nufft3 as nufft3
+from random import uniform as uniform
 
 def nufftfreqs(M, df=1):
     """Compute the frequency range used in nufft for M frequency bins"""
@@ -15,7 +17,7 @@ def nudft(x, y, xi, iflag=1):
     sign = -1 if iflag < 0 else 1
     return (1.0 / len(x)) *np.dot(y, np.exp(sign * 1j * xi * x[:, np.newaxis]))
     
-def forward_nudft(x, u_initial, psi, f, T, R):
+def forward_dft(x, u_initial, psi, f, T, R):
     """Solves advection-diffusion equation forward in time.
 
     The equation is
@@ -26,7 +28,7 @@ def forward_nudft(x, u_initial, psi, f, T, R):
     the support of f(x) is a subset of [-R/2, R/2].
 
     Args:
-        x: grid in physical space
+        x: uniform grid in physical space, dx = $R / N$
         u_initial: initial field value
         psi: advection coefficient
         f: time independent source
@@ -83,6 +85,70 @@ def forward(x, u_initial, psi, f, T, R):
         psi: advection coefficient
         f: time independent source
         T: final time
+        R: The support of the source is a subset of $[-R / 2, R / 2]$
+    
+    Returns:
+        u_final: final field value
+
+    """
+    # add $R / 2$ to the grid, and evaluate Riemann sums on the right endpoint 
+    x = np.append(x, R / 2.0)
+    u_initial = np.append(u_initial, 0.0)
+    f = np.append(f, 0.0)
+    N = len(x)
+    dx = np.zeros(N)
+    dx[0] = x[0] - (- R / 2.0)
+    dx[1 : N] = x[1 :  N] - x[0 : N - 1]
+    
+    # nufft frecuencies
+    xi = (np.arange(-N // 2, N // 2) + N % 2)
+    zero_freq_index = N // 2
+    
+    # Fourier transform, NOTICE that nufft3 calculates the normalized
+    # sum: line 71 in https://github.com/dfm/python-nufft/blob/master/nufft/nufft.py
+    u_hat_initial = N * nufft3(x, u_initial * dx, xi)
+    f_hat = N * nufft3(x, f * dx, xi)
+    
+    # solve ODE's analitically in Fourier space
+    a = (1j * psi - xi) * xi
+    u_hat_final = np.zeros(N)
+    u_hat_final = np.array(u_hat_final, dtype=complex)
+    
+    for n in range (0, zero_freq_index):
+        u_hat_final[n] = (
+            u_hat_initial[n] * np.exp(a[n] * T) - 
+            (f_hat[n] / a[n]) * (1.0 - np.exp(a[n] * T)))
+    for n in range (zero_freq_index + 1, N):
+        u_hat_final[n] = (
+            u_hat_initial[n] * np.exp(a[n] * T) - 
+            (f_hat[n] / a[n]) * (1.0 - np.exp(a[n] * T)))    
+    u_hat_final[zero_freq_index] = (
+        u_hat_initial[zero_freq_index] + 
+        (T + 0j) * f_hat[zero_freq_index])
+    
+    # inverse Fourier transform,  NOTICE that nufft3 calculates the normalized
+    # sum: line 71 in https://github.com/dfm/python-nufft/blob/master/nufft/nufft.py
+    u_final = (
+        (1.0 / (2 * np.pi)) * N * 
+        nufft3(xi, u_hat_final, x, iflag=-1))
+    return u_final[0 : N - 1]
+
+def forward_fft(x, u_initial, psi, f, T, R):
+    """Solves advection-diffusion equation forward in time using the FFT.
+
+    The equation is
+    $$
+    u_t - u_{xx} - \psi u_x - f(x) = 0 \:,
+    $$
+    with initial condition $u(x,0) = u_initial$. We assume that 
+    the support of f(x) is a subset of [-R/2, R/2].
+
+    Args:
+        x: uniform grid in physical space, $dx = R / N$
+        u_initial: initial field value
+        psi: advection coefficient
+        f: time independent source
+        T: final time
         R: The support of the source is a subset of $[-R,R]$
     
     Returns:
@@ -133,7 +199,7 @@ def forwardGradient(x, u_initial, psi, f, T, R):
     the support of f(x) is a subset of [-R/2, R/2].
 
     Args:
-        x: grid in physical space
+        x: grid in physical space. 
         u_initial: initial field value
         psi: advection coefficient
         f: time independent source
@@ -144,14 +210,22 @@ def forwardGradient(x, u_initial, psi, f, T, R):
         u_final: final field value
 
     """
+    # add $R / 2$ to the grid, and evaluate Riemann sums on the right endpoint 
+    x = np.append(x, R / 2.0)
+    u_initial = np.append(u_initial, 0.0)
+    f = np.append(f, 0.0)
     N = len(x)
+    dx = np.zeros(N)
+    dx[0] = x[0] - (- R / 2.0)
+    dx[1 : N] = x[1 :  N] - x[0 : N - 1]
+    
     # nufft frecuencies
     xi = (np.arange(-N // 2, N // 2) + N % 2)
     zero_freq_index = N // 2
     
     # Fourier transform
-    u_hat_initial = R * nufft_fortran(x, u_initial, N)
-    f_hat = R * nufft_fortran(x, f, N)
+    u_hat_initial = N * nufft3(x, u_initial * dx, xi)
+    f_hat = N * nufft3(x, f * dx, xi)
     
     # Solve ODE's analitically in Fourier space
     a = (1j * psi - xi) * xi
@@ -177,8 +251,8 @@ def forwardGradient(x, u_initial, psi, f, T, R):
     # inverse Fourier transform
     u_final_x = (
         (1.0 / (2.0 * np.pi)) * N * 
-        nufft_fortran(xi * (R / N), u_hat_final_x, N, iflag=-1))
-    return u_final_x
+        nufft3(xi, u_hat_final_x, x, iflag=-1))
+    return u_final_x[0 : N - 1]
 
 def forwardDemo():
     """ Quick demo of the forward functions """
@@ -248,22 +322,30 @@ def u_advection(x, t, psi):
  
 def forwardTest():
     """ Quick test of the forward function, with ZERO SOURCE"""
-    N = 1000 # number of observations
+    N = 10000 # number of observations
     T = 0.0001
     t = 0.0001
     psi = 1000.0
     R = 2.0
-    dx = R / N
-    x = np.linspace(- R / 2.0 , R / 2.0 - dx , N ) # position along the rod
-    u0 = u_advection(x, t, psi)
+    
+    # position along the rod
+    x = np.zeros(N)
+    for i in range(0, N):
+        x[i] = uniform(-R / 2, R / 2)
+    x = np.sort(x)
+
+    u_initial = u_advection(x, t, psi)
     f = np.zeros(N)
-    uT = forward(x, u0, psi, f, T, R)
-    uT_analytical = u_advection(x, t + T, psi)
-    plt.plot(x, u0, 'g', label="$t=0$")
-    plt.plot(x, uT, 'b', label="numerical soln, $t=T$")
-    plt.plot(x, uT_analytical, 'r--', label="analytical soln, $t=T$")
-    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
-    	    ncol=2, mode="expand", borderaxespad=0.)
+    u_final = forward(x, u_initial, psi, f, T, R)
+    u_final_analytical = u_advection(x, t + T, psi)
+    plt.plot(x, u_initial, 'g', label="$t = 0$")
+    print("length x : ", len(x))
+    print("length u_final : ", len(u_final))
+    plt.plot(x, u_final, 'b', label="numerical soln, $t = T$")
+    plt.plot(x, u_final_analytical, 'r--', label="analytical soln, $t = T$")
+    plt.legend(
+        bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", 
+        borderaxespad=0.)
     plt.xlabel('$x$')
     plt.ylabel('$u$')
     pp = PdfPages('./images/advection_solver_test.pdf')
@@ -274,4 +356,4 @@ def forwardTest():
 
 # if module runs as a script run demo
 if __name__ == "__main__":
-    forwardDemo()
+    forwardTest()
