@@ -67,7 +67,7 @@ def forward_dft(x, u_initial, psi, f, T, R):
     
     # inverse Fourier transform
     u_final = (1.0 / (2.0 * np.pi)) * N * nudft(xi, u_hat_final, x, -1)
-    return u_final
+    return np.real(u_final)
 
 def forward(x, u_initial, psi, f, T, R):
     """Solves advection-diffusion equation forward in time using the FFT.
@@ -131,7 +131,7 @@ def forward(x, u_initial, psi, f, T, R):
     u_final = (
         (1.0 / (2 * np.pi)) * N * 
         nufft3(xi, u_hat_final, x, iflag=-1))
-    return u_final[0 : N - 1]
+    return np.real(u_final[0 : N - 1])
 
 def forward_fft(x, u_initial, psi, f, T, R):
     """Solves advection-diffusion equation forward in time using the FFT.
@@ -185,7 +185,7 @@ def forward_fft(x, u_initial, psi, f, T, R):
     u_final = (
         (1.0 / (2 * np.pi)) * N * 
         nufft_fortran(xi * (R / N), u_hat_final, N, iflag=-1))
-    return u_final
+    return np.real(u_final)
 
 def forwardGradient(x, u_initial, psi, f, T, R):
     """Solves for u_{x} in the advection-diffusion equation,
@@ -252,7 +252,7 @@ def forwardGradient(x, u_initial, psi, f, T, R):
     u_final_x = (
         (1.0 / (2.0 * np.pi)) * N * 
         nufft3(xi, u_hat_final_x, x, iflag=-1))
-    return u_final_x[0 : N - 1]
+    return np.real(u_final_x[0 : N - 1])
 
 def forwardDemo():
     """ Quick demo of the forward functions """
