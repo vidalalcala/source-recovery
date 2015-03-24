@@ -356,4 +356,4 @@ def forwardTest():
 
 # if module runs as a script run demo
 if __name__ == "__main__":
-    forwardTest()
+    forwardDemo()
