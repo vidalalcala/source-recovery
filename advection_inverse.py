@@ -49,7 +49,7 @@ def gradient(x, u_final_data, f, psi, T, R, M):
         u_x = forwardGradient(x, np.zeros(len(x)), psi, f, t, R)
         # accumulate gradient
         F_f = F_f - dt * w
-        F_psi = F_psi - np.dot(u_x * w, dx) * dt
+        F_psi = F_psi - np.dot(u_x * w, dx                                                                                                                                                                                                                                                                                                                                              ) * dt
     
     return F_f, F_psi
 
@@ -81,11 +81,11 @@ def recoverDemo():
     # problem parameters
     T = 0.0001
     R = 1.0
-    N = 10000  # Nb of grid points in physical space
+    N = 1000  # Nb of grid points in physical space
     M = 10  # Nb of grid points in time space
-    nb_grad_steps = 100  # Nb of updates with the gradient
+    nb_grad_steps = 1000  # Nb of updates with the gradient
     alpha_f = 100000000.0  # gradient update size
-    alpha_psi = 100000.0
+    alpha_psi = 1000.0
     
     # plots
     pp = PdfPages('./images/recover_demo.pdf')
@@ -96,15 +96,15 @@ def recoverDemo():
     f_optimal = (
         (1.0 / t_f) * np.exp( - x * x / (4.0 * t_f)) /
         np.sqrt( 4.0 * np.pi * t_f))
-    psi_optimal = 2000
+    psi_optimal = 1000
     u_final_data = forward(x, np.zeros(len(x)), psi_optimal, f_optimal, T, R)
 
-    # initial coefficients
-    f = np.zeros(len(x))
-#    f = (
-#        (1.0 / t_f) * np.exp( - (x - 0.1) * (x - 0.1) / (4.0 * t_f)) /
-#        np.sqrt( 4.0 * np.pi * t_f))
-    psi = 1500
+    # initial coefficients   
+    #f = np.zeros(len(x))
+    f = (
+        (1.0 / t_f) * np.exp( - (x - 0.1) * (x - 0.1) / (4.0 * t_f)) /
+       np.sqrt( 4.0 * np.pi * t_f))
+    psi = 1000.0
     
     # plot f
     plt.figure()    
@@ -131,7 +131,7 @@ def recoverDemo():
     # plot u_final_data
     plt.figure()
     plt.plot(x, u_final_data, 'b', label="data")
-    plt.plot(x, u_final_recovered, 'r', label="recovered")
+    plt.plot(x, u_final_recovered, 'r--', label="recovered")
     plt.legend(
         bbox_to_anchor=(0., 1.02, 1., .102), loc=3, 
         ncol=2, mode="expand", borderaxespad=0.)
