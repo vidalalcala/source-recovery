@@ -49,7 +49,7 @@ def gradient(x, u_final_data, f, psi, T, R, M):
         u_x = forwardGradient(x, np.zeros(len(x)), psi, f, t, R)
         # accumulate gradient
         F_f = F_f - dt * w
-        F_psi = F_psi - np.dot(u_x * w, dx                                                                                                                                                                                                                                                                                                                                              ) * dt
+        F_psi = F_psi - np.dot(u_x * w, dx) * dt
     
     return F_f, F_psi
 
