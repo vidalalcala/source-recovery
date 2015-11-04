@@ -1,0 +1,61 @@
+\documentclass{beamer}
+\mode<presentation>
+\usetheme{Madrid}
+
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+
+
+
+\usepackage[utf8]{inputenc}
+%\usepackage[spanish]{babel}
+
+% set fonts for nicer pdf view
+\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{}
+
+\usepackage{graphicx}
+\setbeamertemplate{navigation symbols}{}
+
+\newcommand {\framedgraphic}[1] {
+        \begin{center}
+            \includegraphics[width=\textwidth,height=0.8\textheight , 
+            keepaspectratio]{#1}
+        \end{center}
+}
+
+\input{definitions.tex}
+
+\title[Source and velocity recovery from one time measurements in the advection diffusion equation]{Source and velocity recovery from one time measurements in the advection diffusion equation} 
+\subtitle{Inferencia de parámetros en PDE's}
+\author{José Vidal Alcalá Burgos}
+\institute{Catedrático CONACYT - CIMAT}
+\date{November 5 2015} 
+
+\begin{document}
+% this prints title, author etc. info from above
+\begin{frame}
+\titlepage
+%\centerline{\includegraphics[height=1.1in,width=4in]{Preview-TempPDF.pdf}}
+\end{frame}
+
+
+\begin{frame} 
+\frametitle{Advection diffusion equation}
+We can model the propagation of contaminants in a medium with the advection diffusion equation.
+\begin{equation*}
+  \begin{split}
+    u_t(x, t) = \Delta u(x, t) + \psi \cdot \nabla u(x,t) + f(x)\:,
+  \end{split}
+\end{equation*}
+where
+\begin{itemize}
+  \item $u(x,t)$: contaminant density
+  \item $\psi$: \alert{constant} velocity of the medium
+  \item $f(x)$: contaminant \alert{source} intensity in the position $x$
+\end{itemize}
+
+\alert{QUESTION:} How many time measurements $u(\cdot, T_i)$ do we need to recover $f$ and $\psi$ uniquely?
+\end{frame}
+
+\end{document}
