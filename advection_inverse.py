@@ -94,17 +94,22 @@ def recoverDemo():
     x = np.linspace(- R / 2.0 + R / N, R / 2.0, N)
     t_f = T
     f_optimal = (
-        (1.0 / t_f) * np.exp( - x * x / (4.0 * t_f)) /
-        np.sqrt( 4.0 * np.pi * t_f))
-    psi_optimal = 1000
+        (1.0 / t_f) * np.exp( - (x - 0.1) * (x - 0.1) / (4.0 * t_f)) /
+       np.sqrt( 4.0 * np.pi * t_f))
+    f_optimal = f_optimal + (
+        (1.0 / t_f) * np.exp( - (x + 0.1) * (x + 0.1) / (4.0 * t_f)) /
+       np.sqrt( 4.0 * np.pi * t_f))
+    f_optimal = f_optimal / 2.0
+    psi_optimal = 900
     u_final_data = forward(x, np.zeros(len(x)), psi_optimal, f_optimal, T, R)
 
     # initial coefficients   
+    #f = f_optimal
     #f = np.zeros(len(x))
     f = (
-        (1.0 / t_f) * np.exp( - (x - 0.1) * (x - 0.1) / (4.0 * t_f)) /
+        (1.0 / t_f) * np.exp( - (x) * (x) / (4.0 * t_f)) /
        np.sqrt( 4.0 * np.pi * t_f))
-    psi = 1000.0
+    psi = 910.0
     
     # plot f
     plt.figure()    
