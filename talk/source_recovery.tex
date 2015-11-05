@@ -43,11 +43,12 @@
 \begin{frame} 
 \frametitle{Advection diffusion equation}
 We can model the propagation of contaminants in a medium with the advection diffusion equation.
-\begin{equation*}
+\begin{equation}\label{forward}
   \begin{split}
-    u_t(x, t) = \Delta u(x, t) + \psi \cdot \nabla u(x,t) + f(x)\:,
+    u_t(x, t) &= \Delta u(x, t) + \psi \cdot \nabla u(x,t) + f(x)\\
+    u(x, 0) &= 0\:,
   \end{split}
-\end{equation*}
+\end{equation}
 where
 \begin{itemize}
   \item $u(x,t)$: contaminant density
@@ -57,5 +58,167 @@ where
 
 \alert{QUESTION:} How many time measurements $u(\cdot, T_i)$ do we need to recover $f$ and $\psi$ uniquely?
 \end{frame}
+
+\begin{frame} 
+\frametitle{Uniqueness result}
+
+If we only allow sources $f$ with \alert{compact support}, then \alert{one time} measurement $u(x,T)$ is enough. The main argument is the following:
+\begin{enumerate}
+  \item If we have solutions $u_k$ of the equation \eqref{forward} with parameters $\psi_k$, $f_k$ such that $\psi_1 \neq \psi_2$ and $u_1(\cdot, T)=u_2(\cdot, T)$, then
+    \begin{equation*}
+      \begin{split}
+        \widehat{f}_{1}(\xi) &= \widehat{f}_2(\xi) \frac{a_1}{a_2}\frac{(e^{a_2 T} - 1)}{(e^{a_1 T} - 1)},\quad
+        a_{k} = (i \psi_k - 2 \pi \xi)(2 \pi \xi), \quad \xi\neq 0 \:.
+      \end{split}
+    \end{equation*}
+  \item $\widehat{f}_{k}$ is an \alert{entire} function.
+  \item $\widehat{f}_{k}$ has at most \alert{$O(r)$ zeros} inside a ball of radius $r$.
+  \item $(e^{a_1 T} - 1)$ has \alert{$O(r^2)$} zeros inside a ball of radius $r$, all of them different from the zeros of $(e^{a_2 T} - 1)$.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Adjoint equation}
+Given the \alert{data} $u_d(\cdot) = u(\cdot, T)$, we want minimize (over $\psi$ and $f$)
+\begin{equation*}
+  \begin{split}
+    F(u) = \frac{1}{2} \int_{\R} (u(x,T) - u_d(x))^2 dx\:,
+  \end{split}
+\end{equation*}
+where $u$ satisfies the restriction
+\begin{equation}\label{restriction}
+	\begin{split}
+	  0 &= g(u, \psi, f) = 
+	  \left( \begin{array}{c}
+          u_t - u_{xx} - \psi u_x - f(x) \\
+          u(x, 0) \end{array} \right)\:.
+	\end{split}
+\end{equation}
+We calculate
+\begin{equation*}
+  \begin{split}
+    F_{u} \dot{u} &= \int_{\R} (u(x, T) - u_{d}(x)) \dot{u}(x, T) dx, \quad
+    g_{u} \dot{u} = \left( \begin{array}{c}
+                                    \dot{u}_t - \dot{u}_{xx} - \psi \dot{u}_x\\
+                                    \dot{u}(x, 0) \end{array} \right)\\
+    g_{\psi} \dot{\psi} &= \left( \begin{array}{c}
+                                    - u_x \dot{\psi}\\
+                                    0 \end{array} \right), \quad
+    g_{f} \dot{f} = \left( \begin{array}{c}
+                                    - \dot{f}\\
+                                    0 \end{array} \right)
+  \end{split}
+\end{equation*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Adjoint equation}
+The \alert{adjoint} vector $\lambda$ is the solution of the \alert{adjoint equation}
+\begin{equation}\label{adjoint}
+  \begin{split}
+    F_{u} \dot{u} &= - \biggl< \left( \begin{array}{c}
+          \lambda(x, t) \\
+          \lambda_{0}(x) \end{array} \right), g_{u} \dot{u}\biggr>_{L^2}	
+  \end{split}
+\end{equation}
+The chain rule and the adjoint equation give
+\begin{equation*}
+  \begin{split}
+   d_{f} F \dot{f} &= F_{u} d_{f} u \dot{f} = - \biggl< \left( \begin{array}{c}
+          \lambda(x, t) \\
+          \lambda_{0}(x) \end{array} \right), g_{u} d_{f} u \dot{f}\biggr>_{L^2}\:,	 
+  \end{split}
+\end{equation*}
+and taking the derivative with respect to $f$ of the restriction we obtain
+\begin{equation*}
+  \begin{split}
+    g_{u} d_{f} u \dot{f} + g_f \dot{f} = 0\:.
+  \end{split}
+\end{equation*}
+Therefore
+\begin{equation*}
+  \begin{split}
+    d_f F \dot{f} & = \biggl< \left( \begin{array}{c}
+          \lambda(x, t) \\
+          \lambda_{0}(x) \end{array} \right), g_{f} \dot{f}\biggr>_{L^2}
+    = \biggl< \left( \begin{array}{c}
+          \lambda(x, t) \\
+          \lambda_{0}(x) \end{array} \right),\left( \begin{array}{c}
+                                    - \dot{f}\\
+                                    0 \end{array} \right)\biggr>_{L^2}\\
+    d_{\psi} F \dot{\psi} &= \biggl< \left( \begin{array}{c}
+          \lambda(x, t) \\
+          \lambda_{0}(x) \end{array} \right),\left( \begin{array}{c}
+                                    - u_{x} \dot{\psi}\\
+                                    0 \end{array} \right)\biggr>_{L^2}
+  \end{split}
+\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Adjoint equation}
+Integration by parts shows that the adjoint equation can be written as
+\begin{equation}\label{adjoint_pde}
+	\begin{split}
+	\lambda_t(x,t) &= - \lambda_{xx}(x,t) + \psi \lambda_x(x,t) \\
+	\lambda(x, T) &= u_{d}(x) - u(x, T) \\
+	\lambda(x,0) &= \lambda_0(x)
+	\end{split}
+\end{equation}
+\alert{Summary:} Given any $\psi$ and $f$
+\begin{enumerate}
+  \item Solve for $u(x, t)$ in the advection diffusion equation.
+  \item Use $u(x, T)$ and the data $u_{d}(x)$ to find the solution $\lambda$ of the adjoint equation.
+  \item Use $u$ and $\lambda$ to evaluate
+  \begin{equation*}
+	\begin{split}
+	  d_f F & = -\int_{0}^{T} \lambda(x, t) dt, \quad d_\psi F = -\int_{0}^{T} \int_{\R} \lambda(x,t) u_{x}(x, t)dxdt\\
+	\end{split}
+\end{equation*}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Numerical implementation}
+
+Now we can minimize $F$ over $\psi$ and $f$ with a simple gradient descent:
+\begin{equation*}
+	\begin{split}
+	f_{n+1} &= f_n - \alpha d_{f} F, \quad \psi_{n+1}= \psi_{n} - \beta d_{\psi} F
+	\end{split}
+\end{equation*}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{document}
