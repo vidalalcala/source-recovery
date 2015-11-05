@@ -86,6 +86,7 @@ def recoverDemo():
     nb_grad_steps = 1000  # Nb of updates with the gradient
     alpha_f = 100000000.0  # gradient update size
     alpha_psi = 1000.0
+    sigma = 0.02
     
     # plots
     pp = PdfPages('./images/recover_demo.pdf')
@@ -102,6 +103,9 @@ def recoverDemo():
     f_optimal = f_optimal / 2.0
     psi_optimal = 900
     u_final_data = forward(x, np.zeros(len(x)), psi_optimal, f_optimal, T, R)
+    
+    # add noise to the data
+    u_final_data = u_final_data + np.random.normal(0, sigma, len(u_final_data)) 
 
     # initial coefficients   
     #f = f_optimal
