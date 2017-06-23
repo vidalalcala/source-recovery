@@ -2,6 +2,8 @@
 
 from __future__ import print_function, division
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -44,12 +46,12 @@ def gradient(x, u_final_data, f, psi, T, R, M):
     for i in range(1, M + 1):
         t = i * dt
         # solve adjoint problem in w
-        w = forward(x, u_final_data - u_final, -psi, np.zeros(len(x)), T - t, R)
+        w = forward(x, u_final - u_final_data, -psi, np.zeros(len(x)), T - t, R)
         # solve forward problem for u_x
         u_x = forwardGradient(x, np.zeros(len(x)), psi, f, t, R)
         # accumulate gradient
-        F_f = F_f - dt * w
-        F_psi = F_psi - np.dot(u_x * w, dx) * dt
+        F_f = F_f + dt * w
+        F_psi = F_psi + np.dot(u_x * w, dx) * dt
     
     return F_f, F_psi
 
@@ -85,7 +87,7 @@ def recoverDemo():
     M = 10  # Nb of grid points in time space
     nb_grad_steps = 1000  # Nb of updates with the gradient
     alpha_f = 100000000.0  # gradient update size
-    alpha_psi = 1000.0
+    alpha_psi = 100000.0
     sigma = 0.02
     
     # plots
@@ -113,7 +115,7 @@ def recoverDemo():
     f = (
         (1.0 / t_f) * np.exp( - (x) * (x) / (4.0 * t_f)) /
        np.sqrt( 4.0 * np.pi * t_f))
-    psi = 910.0
+    psi = 600.0
     
     # plot f
     plt.figure()    

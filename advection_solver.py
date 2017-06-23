@@ -2,6 +2,8 @@
 
 from __future__ import print_function, division
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from nufft import nufft1 as nufft_fortran
@@ -110,7 +112,7 @@ def forward(x, u_initial, psi, f, T, R):
     f_hat = N * nufft3(x, f * dx, xi)
     
     # solve ODE's analitically in Fourier space
-    a = (1j * psi - xi) * xi
+    a = (-1j * psi - xi) * xi
     u_hat_final = np.zeros(N)
     u_hat_final = np.array(u_hat_final, dtype=complex)
     
@@ -228,7 +230,7 @@ def forwardGradient(x, u_initial, psi, f, T, R):
     f_hat = N * nufft3(x, f * dx, xi)
     
     # Solve ODE's analitically in Fourier space
-    a = (1j * psi - xi) * xi
+    a = (-1j * psi - xi) * xi
     u_hat_final_x = np.zeros(N)
     u_hat_final_x = np.array(u_hat_final_x, dtype=complex)
     
@@ -316,7 +318,7 @@ def u_advection(x, t, psi):
 
     """	
     u = (
-        np.exp(- (x - psi * t) * (x - psi * t) / (4.0 * t)) / 
+        np.exp(- (x + psi * t) * (x + psi * t) / (4.0 * t)) /
         np.sqrt(4.0 * np.pi * t))
     return u
  
