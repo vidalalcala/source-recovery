@@ -87,7 +87,7 @@ def recoverDemo():
     M = 10  # Nb of grid points in time space
     nb_grad_steps = 1000  # Nb of updates with the gradient
     alpha_f = 100000000.0  # gradient update size
-    alpha_psi = 100000.0
+    alpha_psi = 1000.0
     sigma = 0.02
     
     # plots
@@ -115,7 +115,7 @@ def recoverDemo():
     f = (
         (1.0 / t_f) * np.exp( - (x) * (x) / (4.0 * t_f)) /
        np.sqrt( 4.0 * np.pi * t_f))
-    psi = 600.0
+    psi = 900.0
     
     # plot f
     plt.figure()    
@@ -132,7 +132,7 @@ def recoverDemo():
         F_f, F_psi = gradient(x, u_final_data, f, psi, T, R, M)
         f = f - alpha_f * F_f
         psi = psi - alpha_psi * F_psi
-    
+
     print("psi_recovered : ", psi)
     print("psi_optimal : ", psi_optimal)
     print("F_psi : ", F_psi)
