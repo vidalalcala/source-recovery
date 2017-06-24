@@ -132,6 +132,9 @@ def recoverDemo():
         F_f, F_psi = gradient(x, u_final_data, f, psi, T, R, M)
         f = f - alpha_f * F_f
         psi = psi - alpha_psi * F_psi
+        print("psi_recovered : ", psi)
+        print("psi_optimal : ", psi_optimal)
+        print("F_psi : ", F_psi)
 
     print("psi_recovered : ", psi)
     print("psi_optimal : ", psi_optimal)
