@@ -6,7 +6,7 @@ in the advection diffusion equation.
 Dependencies
 ------------
 - Fortran compiler
-- 
+- Install python dependencies
 ```
 pip install -r requirements.txt
 ```
